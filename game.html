@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Rock Paper Scissors Battle Simulator</title>
+  <style>
+    :root {
+      --rock-color: #b0bec5;
+      --paper-color: #90caf9;
+      --scissors-color: #ef5350;
+      --panel-bg: rgba(5, 10, 30, 0.75);
+      --accent: #80cbc4;
+      --text-main: #e0f7fa;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text-main);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      background: radial-gradient(circle at 10% 20%, #00111d 0, #000814 35%, #00010a 100%);
+      background-size: 400% 400%;
+      animation: aurora 30s ease-in-out infinite;
+    }
+
+    /* Aurora overlay */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: -20%;
+      background:
+        radial-gradient(circle at 10% 20%, rgba(0, 255, 200, 0.18) 0, transparent 40%),
+        radial-gradient(circle at 80% 0%, rgba(0, 180, 255, 0.18) 0, transparent 45%),
+        radial-gradient(circle at 0% 100%, rgba(200, 255, 0, 0.12) 0, transparent 50%),
+        radial-gradient(circle at 100% 80%, rgba(255, 0, 180, 0.12) 0, transparent 50%);
+      mix-blend-mode: screen;
+      opacity: 0.9;
+      filter: blur(8px);
+      animation: auroraShift 40s linear infinite alternate;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    @keyframes aurora {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    @keyframes auroraShift {
+      0% {
+        transform: translate3d(0, 0, 0) scale(1.05);
+      }
+      50% {
+        transform: translate3d(3%, -2%, 0) scale(1.1);
+      }
+      100% {
+        transform: translate3d(-3%, 2%, 0) scale(1.05);
+      }
+    }
+
+    h1 {
+      margin: 0 0 0.6rem;
+      text-align: center;
+      letter-spacing: 0.08em;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 1.3rem;
+    }
+
+    .subtitle {
+      font-size: 0.85rem;
+      opacity: 0.8;
+      text-align: center;
+      margin-bottom: 0.9rem;
+    }
+
+    .panel {
+      background: var(--panel-bg);
+      border-radius: 18px;
+      padding: 1rem 1.25rem 1.1rem;
+      box-shadow:
+        0 0 30px rgba(0, 200, 255, 0.2),
+        0 0 80px rgba(0, 255, 200, 0.2);
+      backdrop-filter: blur(18px);
+      border: 1px solid rgba(144, 202, 249, 0.2);
+      max-width: 960px;
+      width: 96vw;
+    }
+
+    .top-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .control-group {
+      font-size: 0.8rem;
+    }
+
+    .control-group label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.25rem;
+      gap: 0.25rem;
+    }
+
+    .control-group span.value {
+      font-variant-numeric: tabular-nums;
+      opacity: 0.9;
+      min-width: 2ch;
+      text-align: right;
+      font-size: 0.8rem;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      appearance: none;
+      height: 4px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.15);
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 10px rgba(128, 203, 196, 0.9);
+      cursor: pointer;
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 10px rgba(128, 203, 196, 0.9);
+      cursor: pointer;
+      border: none;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border-radius: 999px;
+      border: 1px solid rgba(128, 203, 196, 0.7);
+      padding: 0.4rem 0.9rem;
+      background: radial-gradient(circle at 30% 0%, rgba(128, 203, 196, 0.4) 0, rgba(0, 0, 0, 0.6) 40%, rgba(0, 0, 0, 0.8) 100%);
+      color: var(--text-main);
+      cursor: pointer;
+      font-size: 0.8rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 0 18px rgba(128, 203, 196, 0.7);
+      background: radial-gradient(circle at 40% 0%, rgba(128, 203, 196, 0.6) 0, rgba(0, 0, 0, 0.5) 40%, rgba(0, 0, 0, 0.85) 100%);
+    }
+
+    button.secondary {
+      border-color: rgba(144, 202, 249, 0.7);
+      background: radial-gradient(circle at 30% 0%, rgba(144, 202, 249, 0.4) 0, rgba(0, 0, 0, 0.6) 40%, rgba(0, 0, 0, 0.9) 100%);
+    }
+
+    button.secondary:hover {
+      box-shadow: 0 0 18px rgba(144, 202, 249, 0.7);
+    }
+
+    .legend-and-stats {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      font-size: 0.75rem;
+      margin-bottom: 0.6rem;
+      flex-wrap: wrap;
+    }
+
+    .legend {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      opacity: 0.9;
+    }
+
+    .legend-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
+    }
+
+    .legend-color.rock { background: var(--rock-color); }
+    .legend-color.paper { background: var(--paper-color); }
+    .legend-color.scissors { background: var(--scissors-color); }
+
+    .stats {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .stat {
+      display: inline-flex;
+      gap: 0.3rem;
+      align-items: baseline;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .stat-label {
+      opacity: 0.8;
+    }
+
+    .stat-value {
+      font-weight: 600;
+    }
+
+    .arena-wrapper {
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(129, 212, 250, 0.4);
+      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+    }
+
+    canvas {
+      display: block;
+      background: radial-gradient(circle at 50% 120%, rgba(0, 0, 0, 0.9) 0, #000015 40%, #000010 100%);
+    }
+
+    #resultOverlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      backdrop-filter: blur(6px);
+      background: radial-gradient(circle at 50% 0%, rgba(128, 203, 196, 0.2) 0, rgba(0, 0, 0, 0.82) 40%, rgba(0, 0, 0, 0.95) 100%);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.8s ease;
+    }
+
+    #resultOverlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    #resultOverlay h2 {
+      font-size: 2.4rem;
+      margin: 0 0 0.4rem;
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+      text-shadow:
+        0 0 12px rgba(128, 203, 196, 0.9),
+        0 0 30px rgba(128, 203, 196, 0.8);
+      animation: pulse 1.4s ease-in-out infinite alternate;
+    }
+
+    #resultOverlay .winner-name {
+      font-weight: 700;
+    }
+
+    #resultOverlay p {
+      margin: 0.2rem 0;
+      opacity: 0.92;
+      font-size: 0.9rem;
+    }
+
+    #resultOverlay .again {
+      margin-top: 0.8rem;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      100% { transform: scale(1.05); }
+    }
+
+    @media (max-width: 700px) {
+      .controls {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .top-bar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .buttons {
+        width: 100%;
+        justify-content: space-between;
+      }
+      h1 {
+        font-size: 1.1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="panel">
+    <div class="top-bar">
+      <div>
+        <h1>Rock · Paper · Scissors Battle Arena</h1>
+        <div class="subtitle">Tweak the dials, then unleash the elemental chaos.</div>
+      </div>
+      <div class="buttons">
+        <button id="startBtn">▶ Start Battle</button>
+        <button class="secondary" id="resetBtn">⭮ Reset</button>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="control-group">
+        <label for="rockCount">
+          <span>🪨 Rocks</span>
+          <span class="value" id="rockCountLabel">5</span>
+        </label>
+        <input id="rockCount" type="range" min="1" max="10" value="5" />
+      </div>
+
+      <div class="control-group">
+        <label for="paperCount">
+          <span>📄 Paper</span>
+          <span class="value" id="paperCountLabel">5</span>
+        </label>
+        <input id="paperCount" type="range" min="1" max="10" value="5" />
+      </div>
+
+      <div class="control-group">
+        <label for="scissorsCount">
+          <span>✂️ Scissors</span>
+          <span class="value" id="scissorsCountLabel">5</span>
+        </label>
+        <input id="scissorsCount" type="range" min="1" max="10" value="5" />
+      </div>
+
+      <div class="control-group">
+        <label for="speedSlider">
+          <span>⚡ Speed</span>
+          <span class="value" id="speedLabel">1.0×</span>
+        </label>
+        <input id="speedSlider" type="range" min="0.5" max="3" step="0.1" value="1" />
+      </div>
+
+      <div class="control-group">
+        <label for="sizeSlider">
+          <span>⬤ Icon Size</span>
+          <span class="value" id="sizeLabel">22px</span>
+        </label>
+        <input id="sizeSlider" type="range" min="14" max="40" step="1" value="22" />
+      </div>
+
+      <div class="control-group">
+        <label>
+          <span>Mode</span>
+          <span class="value">Classic R·P·S</span>
+        </label>
+        <div style="font-size:0.7rem;opacity:0.7;line-height:1.4">
+          Loser becomes winner on each collision.<br />
+          Last icon standing claims the arena.
+        </div>
+      </div>
+    </div>
+
+    <div class="legend-and-stats">
+      <div class="legend">
+        <div class="legend-item">
+          <span class="legend-color rock"></span><span>Rock crushes Scissors</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-color paper"></span><span>Paper covers Rock</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-color scissors"></span><span>Scissors cut Paper</span>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat"><span class="stat-label">🪨</span><span class="stat-value" id="rockCountStat">0</span></div>
+        <div class="stat"><span class="stat-label">📄</span><span class="stat-value" id="paperCountStat">0</span></div>
+        <div class="stat"><span class="stat-label">✂️</span><span class="stat-value" id="scissorsCountStat">0</span></div>
+      </div>
+    </div>
+
+    <div class="arena-wrapper">
+      <canvas id="arena" width="900" height="480"></canvas>
+      <div id="resultOverlay">
+        <h2 id="winnerTitle">VICTORY</h2>
+        <p id="winnerSummary"></p>
+        <p id="winnerBreakdown"></p>
+        <button class="again" id="playAgainBtn">⭮ Run Another Battle</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const canvas = document.getElementById("arena");
+      const ctx = canvas.getContext("2d");
+
+      const rockSlider = document.getElementById("rockCount");
+      const paperSlider = document.getElementById("paperCount");
+      const scissorsSlider = document.getElementById("scissorsCount");
+      const rockLbl = document.getElementById("rockCountLabel");
+      const paperLbl = document.getElementById("paperCountLabel");
+      const scissorsLbl = document.getElementById("scissorsCountLabel");
+
+      const speedSlider = document.getElementById("speedSlider");
+      const speedLabel = document.getElementById("speedLabel");
+      const sizeSlider = document.getElementById("sizeSlider");
+      const sizeLabel = document.getElementById("sizeLabel");
+
+      const startBtn = document.getElementById("startBtn");
+      const resetBtn = document.getElementById("resetBtn");
+      const playAgainBtn = document.getElementById("playAgainBtn");
+
+      const rockStat = document.getElementById("rockCountStat");
+      const paperStat = document.getElementById("paperCountStat");
+      const scissorsStat = document.getElementById("scissorsCountStat");
+
+      const resultOverlay = document.getElementById("resultOverlay");
+      const winnerTitle = document.getElementById("winnerTitle");
+      const winnerSummary = document.getElementById("winnerSummary");
+      const winnerBreakdown = document.getElementById("winnerBreakdown");
+
+      const TYPES = {
+        rock: {
+          key: "rock",
+          color: getComputedStyle(document.documentElement)
+            .getPropertyValue("--rock-color")
+            .trim(),
+          label: "ROCK",
+          icon: "🪨",
+        },
+        paper: {
+          key: "paper",
+          color: getComputedStyle(document.documentElement)
+            .getPropertyValue("--paper-color")
+            .trim(),
+          label: "PAPER",
+          icon: "📄",
+        },
+        scissors: {
+          key: "scissors",
+          color: getComputedStyle(document.documentElement)
+            .getPropertyValue("--scissors-color")
+            .trim(),
+          label: "SCISSORS",
+          icon: "✂️",
+        },
+      };
+
+      let particles = [];
+      let radius = parseFloat(sizeSlider.value);
+      const baseSpeed = 1.6; // px per frame baseline
+      let speedFactor = parseFloat(speedSlider.value);
+      let animationId = null;
+      let running = false;
+      let typeChangeCollisions = 0;
+
+      // --- UI helpers ---
+
+      function updateSliderLabels() {
+        rockLbl.textContent = rockSlider.value;
+        paperLbl.textContent = paperSlider.value;
+        scissorsLbl.textContent = scissorsSlider.value;
+        speedLabel.textContent = speedSlider.value + "×";
+        sizeLabel.textContent = sizeSlider.value + "px";
+      }
+
+      rockSlider.addEventListener("input", updateSliderLabels);
+      paperSlider.addEventListener("input", updateSliderLabels);
+      scissorsSlider.addEventListener("input", updateSliderLabels);
+      speedSlider.addEventListener("input", () => {
+        speedFactor = parseFloat(speedSlider.value);
+        updateSliderLabels();
+      });
+      sizeSlider.addEventListener("input", () => {
+        radius = parseFloat(sizeSlider.value);
+        updateSliderLabels();
+      });
+
+      updateSliderLabels();
+
+      // --- Physics & game logic ---
+
+      function beats(typeA, typeB) {
+        if (typeA === typeB) return 0;
+        if (typeA === "rock" && typeB === "scissors") return 1;
+        if (typeA === "scissors" && typeB === "paper") return 1;
+        if (typeA === "paper" && typeB === "rock") return 1;
+        return -1; // otherwise B beats A
+      }
+
+      function createParticles() {
+        particles = [];
+        typeChangeCollisions = 0;
+
+        const counts = {
+          rock: parseInt(rockSlider.value, 10),
+          paper: parseInt(paperSlider.value, 10),
+          scissors: parseInt(scissorsSlider.value, 10),
+        };
+
+        const typesSequence = [];
+        Object.keys(counts).forEach((t) => {
+          for (let i = 0; i < counts[t]; i++) {
+            typesSequence.push(t);
+          }
+        });
+
+        const width = canvas.width;
+        const height = canvas.height;
+
+        typesSequence.forEach((type) => {
+          let x, y;
+          const maxAttempts = 80;
+          let attempts = 0;
+          let valid = false;
+
+          while (!valid && attempts < maxAttempts) {
+            x = radius + Math.random() * (width - 2 * radius);
+            y = radius + Math.random() * (height - 2 * radius);
+            valid = true;
+            for (let i = 0; i < particles.length; i++) {
+              const p = particles[i];
+              const dx = p.x - x;
+              const dy = p.y - y;
+              const distSq = dx * dx + dy * dy;
+              if (distSq < (2 * radius) * (2 * radius)) {
+                valid = false;
+                break;
+              }
+            }
+            attempts++;
+          }
+
+          if (!valid) {
+            // fallback, just place and let physics sort it out
+            x = radius + Math.random() * (width - 2 * radius);
+            y = radius + Math.random() * (height - 2 * radius);
+          }
+
+          const angle = Math.random() * Math.PI * 2;
+          const speed = baseSpeed * speedFactor;
+          const vx = Math.cos(angle) * speed;
+          const vy = Math.sin(angle) * speed;
+
+          particles.push({
+            x,
+            y,
+            vx,
+            vy,
+            type,
+          });
+        });
+      }
+
+      function update(dt) {
+        const width = canvas.width;
+        const height = canvas.height;
+
+        // Move
+        for (const p of particles) {
+          p.x += p.vx * dt;
+          p.y += p.vy * dt;
+
+          // Walls: reflect
+          if (p.x - radius < 0) {
+            p.x = radius;
+            p.vx *= -1;
+          } else if (p.x + radius > width) {
+            p.x = width - radius;
+            p.vx *= -1;
+          }
+          if (p.y - radius < 0) {
+            p.y = radius;
+            p.vy *= -1;
+          } else if (p.y + radius > height) {
+            p.y = height - radius;
+            p.vy *= -1;
+          }
+        }
+
+        // Collisions between particles
+        const maxDist = 2 * radius;
+        const maxDistSq = maxDist * maxDist;
+
+        for (let i = 0; i < particles.length; i++) {
+          for (let j = i + 1; j < particles.length; j++) {
+            const a = particles[i];
+            const b = particles[j];
+            const dx = b.x - a.x;
+            const dy = b.y - a.y;
+            const distSq = dx * dx + dy * dy;
+
+            if (distSq > 0 && distSq <= maxDistSq) {
+              const dist = Math.sqrt(distSq);
+              const overlap = maxDist - dist;
+
+              // Separation so they don't stick together
+              const nx = dx / dist;
+              const ny = dy / dist;
+              a.x -= (nx * overlap) / 2;
+              a.y -= (ny * overlap) / 2;
+              b.x += (nx * overlap) / 2;
+              b.y += (ny * overlap) / 2;
+
+              // Elastic-ish bounce: swap velocities (equal mass)
+              const avx = a.vx;
+              const avy = a.vy;
+              a.vx = b.vx;
+              a.vy = b.vy;
+              b.vx = avx;
+              b.vy = avy;
+
+              // Rock-paper-scissors outcome
+              const outcome = beats(a.type, b.type);
+              if (outcome === 1) {
+                if (b.type !== a.type) {
+                  b.type = a.type;
+                  typeChangeCollisions++;
+                }
+              } else if (outcome === -1) {
+                if (a.type !== b.type) {
+                  a.type = b.type;
+                  typeChangeCollisions++;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        ctx.save();
+        ctx.shadowBlur = 12;
+
+        for (const p of particles) {
+          const info = TYPES[p.type];
+
+          // Circle body
+          ctx.beginPath();
+          ctx.fillStyle = info.color;
+          ctx.shadowColor = info.color;
+          ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.closePath();
+
+          // Inner outline
+          ctx.beginPath();
+          ctx.strokeStyle = "rgba(0,0,0,0.6)";
+          ctx.lineWidth = 1;
+          ctx.arc(p.x, p.y, radius - 0.5, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.closePath();
+
+          // Letter marker
+          ctx.fillStyle = "#ffffff";
+          ctx.font = `${radius * 0.85}px system-ui, sans-serif`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          const letter =
+            p.type === "rock" ? "R" : p.type === "paper" ? "P" : "S";
+          ctx.fillText(letter, p.x, p.y + 0.5);
+        }
+
+        ctx.restore();
+      }
+
+      function updateStatsAndMaybeEnd() {
+        let rock = 0,
+          paper = 0,
+          scissors = 0;
+
+        for (const p of particles) {
+          if (p.type === "rock") rock++;
+          else if (p.type === "paper") paper++;
+          else if (p.type === "scissors") scissors++;
+        }
+
+        rockStat.textContent = rock;
+        paperStat.textContent = paper;
+        scissorsStat.textContent = scissors;
+
+        const total = rock + paper + scissors;
+        if (total === 0 || !running) return;
+
+        const aliveTypes = [];
+        if (rock > 0) aliveTypes.push("rock");
+        if (paper > 0) aliveTypes.push("paper");
+        if (scissors > 0) aliveTypes.push("scissors");
+
+        if (aliveTypes.length === 1) {
+          // One type has conquered the arena
+          const winnerType = aliveTypes[0];
+          const info = TYPES[winnerType];
+          endBattle(winnerType, { rock, paper, scissors });
+        }
+      }
+
+      function endBattle(winnerType, counts) {
+        running = false;
+        if (animationId !== null) {
+          cancelAnimationFrame(animationId);
+          animationId = null;
+        }
+
+        const info = TYPES[winnerType];
+
+        winnerTitle.textContent = `${info.label} DOMINATES`;
+        const icon = info.icon;
+        winnerSummary.innerHTML = `${icon} <span class="winner-name">${info.label}</span> has converted every opponent in the arena.`;
+
+        winnerBreakdown.textContent =
+          `Final tally — Rock: ${counts.rock}, ` +
+          `Paper: ${counts.paper}, ` +
+          `Scissors: ${counts.scissors}. ` +
+          `Type-change collisions: ${typeChangeCollisions}.`;
+
+        resultOverlay.classList.add("show");
+      }
+
+      // --- Main loop ---
+
+      let lastTimestamp = performance.now();
+
+      function loop(timestamp) {
+        if (!running) return;
+
+        const dtMs = timestamp - lastTimestamp;
+        lastTimestamp = timestamp;
+
+        // Normalize dt to ~60fps. This keeps speeds more stable.
+        const dt = Math.min(dtMs / (1000 / 60), 2);
+
+        update(dt);
+        draw();
+        updateStatsAndMaybeEnd();
+
+        if (running) {
+          animationId = requestAnimationFrame(loop);
+        }
+      }
+
+      // --- Controls ---
+
+      function startBattle() {
+        // Recreate particles from current settings
+        radius = parseFloat(sizeSlider.value);
+        speedFactor = parseFloat(speedSlider.value);
+        createParticles();
+        resultOverlay.classList.remove("show");
+        lastTimestamp = performance.now();
+        running = true;
+        if (animationId !== null) {
+          cancelAnimationFrame(animationId);
+        }
+        animationId = requestAnimationFrame(loop);
+        updateStatsAndMaybeEnd();
+      }
+
+      function resetBattle() {
+        running = false;
+        if (animationId !== null) {
+          cancelAnimationFrame(animationId);
+          animationId = null;
+        }
+        resultOverlay.classList.remove("show");
+        particles = [];
+        typeChangeCollisions = 0;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        rockStat.textContent = "0";
+        paperStat.textContent = "0";
+        scissorsStat.textContent = "0";
+      }
+
+      startBtn.addEventListener("click", startBattle);
+      resetBtn.addEventListener("click", resetBattle);
+      playAgainBtn.addEventListener("click", () => {
+        resetBattle();
+        startBattle();
+      });
+
+      // Start with an initial configuration rendered but not moving
+      createParticles();
+      draw();
+      updateStatsAndMaybeEnd();
+    })();
+  </script>
+</body>
+</html>

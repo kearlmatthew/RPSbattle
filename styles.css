@@ -1,0 +1,35 @@
+:root{
+  --bg:#0b0b0f;
+  --card:#0f1720;
+  --text:#e6eef6;
+  --muted:#9aa8bb;
+  --accent:#ffd166;
+}
+*{box-sizing:border-box}
+body{font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; margin:0; background:linear-gradient(180deg,var(--bg),#071021); color:var(--text);}
+.hero{padding:4rem 1.25rem; text-align:center;}
+.hero h1{font-size:2.25rem; margin:0 0 0.5rem}
+.tagline{color:var(--muted); margin:0 0 1rem}
+.btn{background:var(--accent); color:#08121a; padding:0.6rem 1rem; border-radius:8px; text-decoration:none; font-weight:600}
+.intro{max-width:800px; margin:1rem auto; padding:1rem}
+.site-footer{padding:1rem; text-align:center; color:var(--muted)}
+
+/* Page layout styles for batman.html */
+.container{max-width:1100px; margin:1.25rem auto; padding:1rem}
+.topbar{display:flex;gap:1rem;align-items:center;justify-content:space-between}
+.logo{font-weight:800;letter-spacing:0.06em}
+.nav a{color:var(--muted); text-decoration:none; margin-left:1rem}
+.section{background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent); padding:1rem; margin:1rem 0; border-radius:10px}
+.two-col{display:grid;grid-template-columns:1fr 360px;gap:1rem}
+@media (max-width:900px){.two-col{grid-template-columns:1fr} .hero h1{font-size:1.6rem}}
+.card{background:rgba(255,255,255,0.02); padding:0.8rem; border-radius:8px}
+.muted{color:var(--muted)}
+.quote{font-style:italic; color:var(--accent);}
+.tag{display:inline-block;background:#162033;color:var(--accent);padding:0.15rem 0.5rem;border-radius:6px;font-size:0.75rem;margin-right:0.4rem}
+.dark-toggle{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted);padding:0.4rem 0.6rem;border-radius:6px}
+
+/* Print friendly */
+@media print{body{color:#000;background:#fff} .btn,.dark-toggle{display:none}}
+
+/* light theme convenience via class on body */
+body.light{--bg:#f6f8fb;--card:#ffffff;--text:#071021;--muted:#4b5563;--accent:#1f6feb}
